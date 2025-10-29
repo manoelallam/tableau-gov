@@ -84,14 +84,53 @@ app.get("/authorize", (req, res) => {
     return res.status(400).send("Client ID inválido");
   }
 
+  // Exibe tela de login fictício
+  res.send(`
+    <h2>🔒 Login GOV.BR (simulado)</h2>
+    <form action="/authorize" method="post">
+      <input type="hidden" name="client_id" value="${client_id}">
+      <input type="hidden" name="redirect_uri" value="${redirect_uri}">
+      <input type="hidden" name="state" value="${state}">
+      
+      <label>Usuário:</label><br>
+      <input type="text" name="username" required><br><br>
+      
+      <label>Senha:</label><br>
+      <input type="password" name="password" required><br><br>
+      
+      <button type="submit">Entrar</button>
+    </form>
+  `);
+});
+
+// Trata envio do login fictício
+app.post("/authorize", (req, res) => {
+  const { username, password, client_id, redirect_uri, state } = req.body;
+
+  console.log("\n🚪 [AUTHORIZE] Solicitação recebida:"); 
+  console.log("Usuário:", username);
+  console.log("client_id:", client_id); 
+  console.log("redirect_uri:", redirect_uri); 
+  console.log("state:", state);
+
+  if (client_id !== CLIENT_ID) {
+    return res.status(400).send("Client ID inválido");
+  }
+
+  // Validação fictícia
+  if (!username || !password) {
+    return res.status(401).send("Credenciais inválidas (simulação)");
+  }
+
+  // Gera código de autorização
   const code = nanoid(8);
-  fakeAuthCodes[code] = { client_id, redirect_uri };
+  fakeAuthCodes[code] = { client_id, username, redirect_uri };
 
   console.log("✅ Login simulado concluído. Código gerado:", code);
 
   res.send(`
-    <h2>Login bem-sucedido via GOV.BR (simulado)</h2>
-    <p>Usuário autenticado com sucesso.</p>
+    <h2>✅ Login bem-sucedido via GOV.BR (simulado)</h2>
+    <p>Usuário: <b>${username}</b></p>
     <p><b>Código gerado:</b> ${code}</p>
     <form action="${redirect_uri}" method="get">
       <input type="hidden" name="code" value="${code}">
